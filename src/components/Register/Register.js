@@ -34,11 +34,13 @@ class Register extends React.Component {
             })
         }).then(response => response.json())
             .then(user => {
-                if (user) {
+                if (user.id) {
                     this.props.loadUser(user);
                     this.props.onRouteChange('home');
                 } else {
                     console.log('Error, what is data?', user);
+                    // Can use 'user' to grab the json that I've written from the back-end
+                    // and probably create an error component to show up
                 }
             });
     }

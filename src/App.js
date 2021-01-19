@@ -8,11 +8,7 @@ import Signin from './components/Signin/Signin';
 import Register from './components/Register/Register';
 import Particles from 'react-particles-js';
 import './App.css';
-import Clarifai from 'clarifai';
 
-const app = new Clarifai.App({
-  apiKey: '1'
-});
 
 const particlesOptions = {
   particles: {
@@ -25,24 +21,25 @@ const particlesOptions = {
     }
   }
 };
+const initialState = {
+    input: '',
+    imageUrl: '',
+    box: {},
+    route: 'signin',
+    isSignedIn: false,
+    user: {
+      email: '',
+      id: '',
+      name: '',
+      entries: 0,
+      joined: ''
+    }
+};
 
 class App extends React.Component {
   constructor() {
     super();
-    this.state = {
-      input: '',
-      imageUrl: '',
-      box: {},
-      route: 'signin',
-      isSignedIn: false,
-      user: {
-        email: '',
-        id: '',
-        name: '',
-        entries: 0,
-        joined: ''
-      }
-    };
+    this.state = initialState;
   }
 
   loadUser = (data) => {
@@ -82,7 +79,14 @@ class App extends React.Component {
     // regions is an array that consists of all possible faces detected. 8 faces means from 0-7
     // Bounding box is in response.outputs[0].data.regions[0].region_info.bounding_box
     // "a403429f2ddf4b49b307e318f00e528b" is face-det model
-    app.models.predict(Clarifai.FACE_DETECT_MODEL, this.state.input)
+    fetch('http://localhost:3000/imageurl', {
+      method: 'post',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({
+        input: this.state.input
+      })
+    })
+    .then(response => response.json())
     .then(response => { 
       if (response) {
         fetch('http://localhost:3000/image', {
@@ -94,7 +98,8 @@ class App extends React.Component {
         }).then(response => response.json())
           .then(count => {
             this.setState(Object.assign(this.state.user, { entries: count}));
-          });
+          })
+          .catch(console.log);
       }
       this.displayFaceBox( this.calculateFaceLocation(response) ) 
     })
@@ -103,7 +108,7 @@ class App extends React.Component {
 
   onRouteChange = (route) => {
     if (route === 'signout') {
-      this.setState({isSignedIn: false});
+      this.setState(initialState);
     } else if (route === 'home') {
       this.setState({isSignedIn: true});
     }
