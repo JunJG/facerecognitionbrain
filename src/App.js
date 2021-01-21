@@ -79,7 +79,7 @@ class App extends React.Component {
     // regions is an array that consists of all possible faces detected. 8 faces means from 0-7
     // Bounding box is in response.outputs[0].data.regions[0].region_info.bounding_box
     // "a403429f2ddf4b49b307e318f00e528b" is face-det model
-    fetch('http://localhost:3000/imageurl', {
+    fetch('https://radiant-beyond-61258.herokuapp.com/imageurl', {
       method: 'post',
       headers: {'Content-Type': 'application/json'},
       body: JSON.stringify({
@@ -89,7 +89,7 @@ class App extends React.Component {
     .then(response => response.json())
     .then(response => { 
       if (response) {
-        fetch('http://localhost:3000/image', {
+        fetch('https://radiant-beyond-61258.herokuapp.com/image', {
           method: 'put',
           headers: {'Content-Type': 'application/json'},
           body: JSON.stringify({
