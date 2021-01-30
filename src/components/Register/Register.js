@@ -22,7 +22,33 @@ class Register extends React.Component {
         this.setState({password: event.target.value});
     }
 
+    // onSubmitSignIn = () => {
+    //     // 'https://radiant-beyond-61258.herokuapp.com/register'
+    //     fetch('http://localhost:3000/register', {
+    //         method: 'post',
+    //         headers: {'Content-Type': 'application/json'},
+    //         body: JSON.stringify({
+    //             email: this.state.email,
+    //             password: this.state.password,
+    //             name: this.state.name
+
+    //         })
+    //     }).then(response => response.json())
+    //         .then(user => {
+    //             if (user.id) {
+    //                 this.props.loadUser(user);
+    //                 this.props.onRouteChange('home');
+    //             } else {
+    //                 console.log('Error, what is data?', user);
+    //                 // Can use 'user' to grab the json that I've written from the back-end
+    //                 // and probably create an error component to show up
+    //             }
+    //         });
+    // }
+
     onSubmitSignIn = () => {
+        // 'https://radiant-beyond-61258.herokuapp.com/register'
+        // 'http://localhost:3000/register'
         fetch('https://radiant-beyond-61258.herokuapp.com/register', {
             method: 'post',
             headers: {'Content-Type': 'application/json'},
@@ -32,17 +58,34 @@ class Register extends React.Component {
                 name: this.state.name
 
             })
-        }).then(response => response.json())
-            .then(user => {
-                if (user.id) {
-                    this.props.loadUser(user);
-                    this.props.onRouteChange('home');
-                } else {
-                    console.log('Error, what is data?', user);
-                    // Can use 'user' to grab the json that I've written from the back-end
-                    // and probably create an error component to show up
+        }).then(response => {
+            // console.log('Response is :', response);
+            return Promise.resolve({'json': response.json(), 'status': response.status});
+        })
+            .then(data => {
+                // console.log('What is returned from promise.resolve?', data);
+                if (data.status === 200) {
+                    data.json.then(resJson => {
+                        if (resJson) {
+                            // console.log('Printing out data from register fetch:', resJson);
+                            // console.log(`Signing you in... Welcome back ${resJson.name}!`);
+                            this.props.setResponseMessage(`Registering you now.. Welcome ${resJson.name}!`);
+                            // this.props.displayResponseMessage();
+
+                            this.props.loadUser(resJson);
+                            this.props.onRouteChange('home');
+                        }
+                    });
                 }
-            });
+                else {
+                    // "Wrong email or password" response back from server side
+                    data.json.then(message => {
+                        // console.log("Message: ",message);
+                        this.props.setResponseMessage(message);
+                    });
+                }
+            })
+            .catch(err => {console.log('ERROR: Failed to handle register', err)});
     }
 
     render() {

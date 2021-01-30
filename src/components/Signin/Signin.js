@@ -18,6 +18,8 @@ class Signin extends React.Component {
     }
 
     onSubmitSignIn = () => {
+        // 'https://radiant-beyond-61258.herokuapp.com/signin'
+        // 'http://localhost:3000/signin'
         fetch('https://radiant-beyond-61258.herokuapp.com/signin', {
             method: 'post',
             headers: {'Content-Type': 'application/json'},
@@ -26,16 +28,34 @@ class Signin extends React.Component {
                 password: this.state.signInPassword
 
             })
-        }).then(response => response.json())
+        }).then(response => {
+            // console.log('Response is :', response);
+            return Promise.resolve({'json': response.json(), 'status': response.status});
+        })
             .then(data => {
-                if (data.id) {
-                    console.log('Signin section, printing out data from signin fetch:', data);
-                    this.props.loadUser(data);
-                    this.props.onRouteChange('home');
-                } else {
-                    console.log('Error, what is data?', data);
+                // console.log('What is returned from promise.resolve?', data);
+                if (data.status === 200) {
+                    data.json.then(resJson => {
+                        if (resJson) {
+                            // console.log('Printing out data from signin fetch:', resJson);
+                            // console.log(`Signing you in... Welcome back ${resJson.name}!`);
+                            this.props.setResponseMessage(`Signing you in... Welcome back ${resJson.name}!`);
+                            // this.props.displayResponseMessage();
+
+                            this.props.loadUser(resJson);
+                            this.props.onRouteChange('home');
+                        }
+                    });
                 }
-            });
+                else {
+                    // "Wrong email or password" response back from server side
+                    data.json.then(message => {
+                        // console.log("Message: ",message);
+                        this.props.setResponseMessage(message);
+                    });
+                }
+            })
+            .catch(err => {console.log('ERROR: Failed to handle signin', err)});
     }
 
     render() {
